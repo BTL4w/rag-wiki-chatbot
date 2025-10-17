@@ -77,7 +77,7 @@ rag_wiki/
 
 ```bash
 # Clone repo
-git clone <your-repo-url>
+git clone https://github.com/BTL4w/rag-wiki-chatbot.git
 cd rag_wiki
 
 # Cài đặt thư viện
