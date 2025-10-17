@@ -1,0 +1,10 @@
+{
+  "total_pages": 245,
+  "total_chunks": 6179,
+  "avg_chunks_per_page": 25.220408163265308,
+  "avg_tokens_per_chunk": 374.6575497653342,
+  "strategy": "semantic",
+  "chunk_size": 600,
+  "overlap": 100,
+  "output_file": "data\\chunks\\chunks.jsonl"
+}

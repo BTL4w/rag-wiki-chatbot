@@ -1,0 +1,110 @@
+# RAG Wiki Chatbot Configuration
+
+# Data paths
+data:
+  raw_wiki_dir: "data/raw_wiki"
+  parsed_dir: "data/parsed"
+  chunks_dir: "data/chunks"
+  
+# Wikipedia source
+wikipedia:
+  language: "vi"  # Vietnamese Wikipedia
+  use_api: true
+  api_base_url: "https://vi.wikipedia.org/w/api.php"
+  # For dump: download from https://dumps.wikimedia.org/viwiki/latest/
+  dump_file: null
+  max_pages: 100  # Limit for testing, set to null for all pages
+
+# Parsing
+parsing:
+  keep_sections: []  # Empty = keep all sections
+  remove_sections: ["References", "External links", "See also", "Tham khảo", "Liên kết ngoài", "Xem thêm"]
+  min_text_length: 50  # Minimum characters per article (lowered from 100)
+
+# Chunking
+chunking:
+  strategy: "semantic"  # Options: semantic, sliding_window
+  chunk_size: 600  # tokens
+  overlap: 100  # tokens
+  min_chunk_size: 50
+  tokenizer: "sentence"  # For semantic chunking
+
+# Embedding
+embedding:
+  provider: "sentence-transformers"  # Options: openai, sentence-transformers, huggingface
+  model_name: "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"  # Good for Vietnamese
+  # For OpenAI:
+  # provider: "openai"
+  # model_name: "text-embedding-3-small"
+  # api_key: "your-api-key"
+  dimension: 768
+  batch_size: 32
+  normalize: true
+  cache_dir: "data/.embedding_cache"
+
+# Vector Database
+vector_db:
+  provider: "faiss"  # Options: faiss, chromadb, qdrant
+  index_type: "HNSW"  # Options: Flat, IVF, HNSW
+  index_path: "data/faiss_index"
+  metric: "cosine"  # Options: cosine, l2, ip
+  # HNSW parameters
+  hnsw_m: 32
+  hnsw_ef_construction: 200
+  hnsw_ef_search: 100
+
+# Retrieval
+retrieval:
+  top_k: 50  # Initial retrieval
+  final_k: 5  # After reranking
+  use_reranker: true  # Disabled - model not available
+  reranker_model: "Alibaba-NLP/gte-multilingual-reranker-base"  # cross-encoder/ms-marco-MiniLM-L-6-v2
+  hybrid_search: false  # Enable BM25 + dense
+  bm25_weight: 0.3
+  dense_weight: 0.7
+
+# Generation (LLM)
+generation:
+  provider: "openai"  # Options: openai, gemini, local, anthropic
+  model_name: "gpt-4o-mini"  # Fixed: was gpt-5-mini (doesn't exist)
+  # provider: "gemini"  # Options: openai, gemini, local, anthropic
+  # model_name: "gemini-1.5-flash"
+  api_key: null  
+  temperature: 0.1
+  max_tokens: 1000
+  max_completion_tokens: 1000  # For newer OpenAI models
+  top_p: 0.9
+  stream: false
+
+# Prompt templates
+prompts:
+  system_prompt: |
+    Bạn là một trợ lý tìm thông tin dựa trên nguồn tài liệu đã cho.
+    Luôn trả lời dựa trên các đoạn trích được cung cấp.
+    Nếu không có thông tin, trả lời: "Không tìm thấy thông tin trong tài liệu".
+  
+  context_template: |
+    [{index}] {title} — {section}
+    {text}
+  
+  qa_template: |
+    CONTEXT:
+    {context}
+    
+    QUESTION: {question}
+    
+    INSTRUCTIONS:
+    - Trả lời ngắn gọn, rõ ràng dựa trên context.
+    - Sau mỗi câu quan trọng, thêm (Nguồn: [số]) để trích dẫn.
+    - Nếu thông tin không có trong context, trả: "Không tìm thấy thông tin trong tài liệu".
+
+# Evaluation
+
+
+# System
+system:
+  cache_enabled: true
+  cache_ttl: 3600  # seconds
+  log_level: "INFO"
+  random_seed: 42
+
